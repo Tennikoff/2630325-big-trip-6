@@ -1,3 +1,5 @@
+import { FilterType } from './const.js';
+
 const MONTH_NAMES = [
   'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
@@ -16,8 +18,6 @@ function getRandomArrayElement(items) {
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
-
-// ---------- Date Formatting ----------
 
 function humanizePointDate(dateString) {
   const date = new Date(dateString);
@@ -72,6 +72,28 @@ function getDuration(dateFrom, dateTo) {
   return `${minutes}M`;
 }
 
+// ---------- Filter functions ----------
+
+function isPointFuture(point) {
+  return new Date(point.dateFrom) > new Date();
+}
+
+function isPointPresent(point) {
+  const now = new Date();
+  return new Date(point.dateFrom) <= now && new Date(point.dateTo) >= now;
+}
+
+function isPointPast(point) {
+  return new Date(point.dateTo) < new Date();
+}
+
+const filter = {
+  [FilterType.EVERYTHING]: (points) => points,
+  [FilterType.FUTURE]: (points) => points.filter(isPointFuture),
+  [FilterType.PRESENT]: (points) => points.filter(isPointPresent),
+  [FilterType.PAST]: (points) => points.filter(isPointPast),
+};
+
 export {
   getRandomInteger,
   getRandomArrayElement,
@@ -82,4 +104,5 @@ export {
   getTimeAttribute,
   formatEditDate,
   getDuration,
+  filter,
 };
