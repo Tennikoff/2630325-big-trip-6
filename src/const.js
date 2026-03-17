@@ -12,4 +12,18 @@ const POINT_TYPES = [
 
 const POINT_COUNT = 4;
 
-export { POINT_TYPES, POINT_COUNT };
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
+
+const NoPointMessage = {
+  [FilterType.EVERYTHING]: 'Click New Event to create your first point',
+  [FilterType.PAST]: 'There are no past events now',
+  [FilterType.PRESENT]: 'There are no present events now',
+  [FilterType.FUTURE]: 'There are no future events now',
+};
+
+export { POINT_TYPES, POINT_COUNT, FilterType, NoPointMessage };
