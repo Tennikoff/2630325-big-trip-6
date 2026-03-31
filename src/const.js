@@ -26,4 +26,20 @@ const NoPointMessage = {
   [FilterType.FUTURE]: 'There are no future events now',
 };
 
-export { POINT_TYPES, POINT_COUNT, FilterType, NoPointMessage };
+const SortType = {
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFER: 'offer',
+};
+
+const EnabledSortType = {
+  [SortType.DAY]: true,
+  [SortType.EVENT]: false,
+  [SortType.TIME]: true,
+  [SortType.PRICE]: true,
+  [SortType.OFFER]: false,
+};
+
+export { POINT_TYPES, POINT_COUNT, FilterType, NoPointMessage, SortType, EnabledSortType };

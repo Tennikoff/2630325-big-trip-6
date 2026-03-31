@@ -94,6 +94,22 @@ const filter = {
   [FilterType.PAST]: (points) => points.filter(isPointPast),
 };
 
+// ---------- Sort functions ----------
+
+function sortByDay(pointA, pointB) {
+  return new Date(pointA.dateFrom) - new Date(pointB.dateFrom);
+}
+
+function sortByTime(pointA, pointB) {
+  const durationA = new Date(pointA.dateTo) - new Date(pointA.dateFrom);
+  const durationB = new Date(pointB.dateTo) - new Date(pointB.dateFrom);
+  return durationB - durationA;
+}
+
+function sortByPrice(pointA, pointB) {
+  return pointB.basePrice - pointA.basePrice;
+}
+
 export {
   getRandomInteger,
   getRandomArrayElement,
@@ -105,4 +121,7 @@ export {
   formatEditDate,
   getDuration,
   filter,
+  sortByDay,
+  sortByTime,
+  sortByPrice,
 };
