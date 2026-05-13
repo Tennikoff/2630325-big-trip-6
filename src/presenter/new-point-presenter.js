@@ -7,33 +7,30 @@ export default class NewPointPresenter {
   #handleDataChange = null;
   #handleDestroy = null;
   #pointEditComponent = null;
-  #offers = null;
-  #destinations = null;
 
-  constructor({ container, offers, destinations, onDataChange, onDestroy }) {
+  // Убрали offers и destinations из параметров конструктора
+  constructor({ container, onDataChange, onDestroy }) {
     this.#container = container;
-    this.#offers = offers;
-    this.#destinations = destinations;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
   }
 
-  init() {
+  // Теперь передаем offers и destinations прямо в init в момент клика по кнопке
+  init(offers, destinations) {
     if (this.#pointEditComponent !== null) {
       return;
     }
 
     this.#pointEditComponent = new EventEditView({
       point: BLANK_POINT,
-      offers: this.#offers,
-      destinations: this.#destinations,
+      offers: offers,
+      destinations: destinations,
       onFormSubmit: this.#handleFormSubmit,
       onDeleteClick: this.#handleDeleteClick,
       isCreating: true,
     });
 
     render(this.#pointEditComponent, this.#container, RenderPosition.AFTERBEGIN);
-
     document.addEventListener('keydown', this.#escKeyDownHandler);
   }
 

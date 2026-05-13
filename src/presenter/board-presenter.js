@@ -1,6 +1,8 @@
 import SortView from '../view/sort-view.js';
 import EventListView from '../view/event-list-view.js';
 import NoPointView from '../view/no-point-view.js';
+import LoadingView from '../view/loading-view.js';
+import ErrorView from '../view/error-view.js';
 import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
 import { render, remove } from '../framework/render.js';
@@ -11,13 +13,19 @@ export default class BoardPresenter {
   #container = null;
   #pointsModel = null;
   #filterModel = null;
+
   #eventListComponent = new EventListView();
+  #loadingComponent = new LoadingView();
+  #errorComponent = new ErrorView();
   #sortComponent = null;
   #noPointComponent = null;
+
   #pointPresenters = new Map();
   #newPointPresenter = null;
+
   #currentSortType = SortType.DAY;
   #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
 
   constructor({ container, pointsModel, filterModel, onNewPointDestroy }) {
     this.#container = container;
@@ -26,11 +34,12 @@ export default class BoardPresenter {
 
     this.#newPointPresenter = new NewPointPresenter({
       container: this.#eventListComponent.element,
-      offers: this.#pointsModel.offers,
-      destinations: this.#pointsModel.destinations,
       onDataChange: this.#handleViewAction,
       onDestroy: onNewPointDestroy,
     });
+
+    this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get points() {
@@ -56,10 +65,15 @@ export default class BoardPresenter {
   createPoint() {
     this.#currentSortType = SortType.DAY;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newPointPresenter.init();
+    this.#newPointPresenter.init(this.#pointsModel.offers, this.#pointsModel.destinations);
   }
 
   #renderBoard() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     const points = this.points;
 
     if (points.length === 0) {
@@ -72,12 +86,19 @@ export default class BoardPresenter {
     this.#renderPoints(points);
   }
 
+  #renderLoading() {
+    render(this.#loadingComponent, this.#container);
+  }
+
+  #renderError() {
+    render(this.#errorComponent, this.#container);
+  }
+
   #renderSort() {
     this.#sortComponent = new SortView({
       currentSortType: this.#currentSortType,
       onSortTypeChange: this.#handleSortTypeChange,
     });
-
     render(this.#sortComponent, this.#container);
   }
 
@@ -109,7 +130,9 @@ export default class BoardPresenter {
     this.#pointPresenters.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
     remove(this.#noPointComponent);
+    remove(this.#errorComponent);
 
     if (resetSortType) {
       this.#currentSortType = SortType.DAY;
@@ -119,23 +142,39 @@ export default class BoardPresenter {
   #handleViewAction = (actionType, updateType, update) => {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointsModel.updatePoint(update);
-        this.#pointPresenters.get(update.id).init(update);
+        this.#pointsModel.updatePoint(updateType, update);
         break;
       case UserAction.ADD_POINT:
-        this.#pointsModel.addPoint(update);
-        this.#newPointPresenter.destroy();
+        this.#pointsModel.addPoint(updateType, update);
+        break;
+      case UserAction.DELETE_POINT:
+        this.#pointsModel.deletePoint(updateType, update);
+        break;
+    }
+  };
+
+  #handleModelEvent = (updateType, data) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#pointPresenters.get(data.id).init(data);
+        break;
+      case UpdateType.MINOR:
+        this.#clearBoard();
+        this.#renderBoard();
+        break;
+      case UpdateType.MAJOR:
         this.#clearBoard({ resetSortType: true });
         this.#renderBoard();
         break;
-      case UserAction.DELETE_POINT:
-        this.#pointsModel.deletePoint(update.id);
-        this.#pointPresenters.get(update.id).destroy();
-        this.#pointPresenters.delete(update.id);
-        if (this.points.length === 0) {
-          this.#clearBoard();
-          this.#renderNoPoints();
-        }
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
+      case UpdateType.ERROR:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderError();
         break;
     }
   };
@@ -149,7 +188,6 @@ export default class BoardPresenter {
     if (this.#currentSortType === sortType) {
       return;
     }
-
     this.#currentSortType = sortType;
     this.#clearBoard();
     this.#renderBoard();

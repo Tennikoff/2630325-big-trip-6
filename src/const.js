@@ -10,7 +10,8 @@ const POINT_TYPES = [
   'restaurant',
 ];
 
-const POINT_COUNT = 4;
+const AUTHORIZATION = 'Basic hS2sfS44wcl1sa2j'; // Строка авторизации
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
 
 const FilterType = {
   EVERYTHING: 'everything',
@@ -65,6 +66,8 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
+  ERROR: 'ERROR',
 };
 
 const BLANK_POINT = {
@@ -77,9 +80,15 @@ const BLANK_POINT = {
   type: POINT_TYPES[0],
 };
 
+const Method = {
+  GET: 'GET',
+  PUT: 'PUT',
+};
+
 export {
   POINT_TYPES,
-  POINT_COUNT,
+  AUTHORIZATION,
+  END_POINT,
   FilterType,
   NoPointMessage,
   SortType,
@@ -89,4 +98,5 @@ export {
   UserAction,
   UpdateType,
   BLANK_POINT,
+  Method,
 };
